@@ -1,0 +1,17 @@
+{
+  "format": 1,
+  "id": "zhuran24.endmin-unmasked",
+  "name": "管理员去面罩 / Endministrator Unmasked",
+  "author": "zhuran24",
+  "version": "@VERSION@",
+  "abi": 1,
+  "libraries": {
+    "windows-x64": "native/windows-x64/zhuran24.endmin-unmasked.dll"
+  },
+  "ui": "ui/index.html",
+  "default_configuration": {
+    "hide_mask": true,
+    "official_face": true
+  },
+  "dependencies": []
+}

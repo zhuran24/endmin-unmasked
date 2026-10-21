@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>管理员去面罩 / Endministrator Unmasked</title>
+<link rel="stylesheet" href="style.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <h1>管理员去面罩 <span>Endministrator Unmasked</span></h1>
+  </header>
+
+  <section class="options">
+    <label class="row">
+      <span class="text">
+        <strong>隐藏管理员面罩 · Hide the mask</strong>
+        <small>男女管理员都适用，大世界、角色界面和剧情里都隐藏。<br>
+               Both Endministrators, in the field, menus and cutscenes.</small>
+      </span>
+      <input type="checkbox" id="hide_mask">
+    </label>
+    <label class="row">
+      <span class="text">
+        <strong>换上剧情里的无面罩脸 · Story unmasked face</strong>
+        <small>仅女管理员：面罩下原来那张脸是给面罩挡着的，换成剧情里摘面罩时那套（眼线、眼珠、刘海投影）。<br>
+               Female Endministrator only: swaps in the face the story uses when she takes the mask off.</small>
+      </span>
+      <input type="checkbox" id="official_face">
+    </label>
+    <p class="hint">改动在游戏里即时生效。 Changes apply in game immediately.</p>
+  </section>
+
+  <section class="status">
+    <h2>状态 · Status</h2>
+    <dl>
+      <dt>连接 · Connection</dt><dd id="connection">…</dd>
+      <dt>模块 · Module</dt><dd id="phase">…</dd>
+      <dt>已换上的脸部部件 · Face parts swapped</dt><dd id="parts">…</dd>
+    </dl>
+    <button id="refresh" type="button">刷新 · Refresh</button>
+    <p class="error" id="error" hidden></p>
+  </section>
+</main>
+</body>
+</html>

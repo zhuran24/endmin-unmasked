@@ -1,0 +1,65 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f6f6f4;
+  --panel: #ffffff;
+  --text: #1d1d1b;
+  --muted: #6b6b66;
+  --line: #deded8;
+  --accent: #d9a400;
+  --error: #b3261e;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615;
+    --panel: #20201e;
+    --text: #ecebe6;
+    --muted: #a3a29b;
+    --line: #34332f;
+    --accent: #f2c230;
+    --error: #f2b8b5;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 "Microsoft YaHei UI", "Segoe UI", system-ui, sans-serif;
+}
+main { max-width: 640px; margin: 0 auto; padding: 20px 16px 32px; }
+h1 { font-size: 20px; margin: 0 0 16px; }
+h1 span { color: var(--muted); font-weight: 400; font-size: 15px; margin-left: 6px; }
+h2 { font-size: 15px; margin: 0 0 10px; }
+section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+.row:last-of-type { border-bottom: none; }
+.row .text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.row small { color: var(--muted); }
+input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+.hint { color: var(--muted); margin: 8px 0 0; font-size: 13px; }
+dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0 0 12px; }
+dt { color: var(--muted); }
+dd { margin: 0; }
+button {
+  font: inherit;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+.error { color: var(--error); margin: 10px 0 0; }
