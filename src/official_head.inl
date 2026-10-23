@@ -10,8 +10,13 @@
  *   脸 face_01、眉毛 eyebrow_01 ← 官方 face_01、brow_01（网格＋材质）
  *   面罩 cloth_03 这一格 ← 官方 brow_02（眼线和睫毛；原模型把它们并在 eyebrow_01 里）
  *   面罩投影 cloth_05 这一格 ← 官方 hairshadow_01（刘海投影）
- *   虹膜 iris_01、眼白阴影 eyeshadow_01 ← 官方同名部件
- *   各级 LOD 和脸的投影代理（shadowProxyDesktop）都按同样的后缀换；头发、身体、衣服不动。
+ *   虹膜 iris_01、眼白阴影 eyeshadow_01、头发 hair_01 ← 官方同名部件（1.5.0 起含头发）
+ *   各级 LOD 和投影代理（shadowProxyDesktop）都按同样的后缀换；身体、衣服不动。
+ *
+ * 官方头发比可玩的多三缕刘海，各三节骨（hair_{R_bangs_a,M_bangs_b,L_bangs_c}_01..03_jnt），
+ * 可玩骨架没有，按下面官方独有骨的办法挂在头骨下，跟着头动；官方模型给刘海配的物理
+ * （MC_Hair_Front）这里没有。其余头发骨两套同名、bindpose 一致，直接用可玩骨，
+ * 可玩模型自己的头发物理照样带着侧面和后面的头发动。
  *
  * 官方网格的 bindpose 是按它自己的脸部骨架做的，两套骨架的身体骨一致、脸部骨（眉、眼、睫毛）
  * 静止位置差 2–11 mm。官方网格原样复用，不复制、不改：这个客户端对游戏自己的网格调
@@ -54,6 +59,7 @@ static const HeadPart kHeadParts[] = {
     {"S_actor_endminf_iris_01_", "S_npc_major_endminfunmasked_iris_01_", 0},
     {"S_actor_endminf_eyeshadow_01_", "S_npc_major_endminfunmasked_eyeshadow_01_", 0},
     {"S_actor_endminf_cloth_05_", "S_npc_major_endminfunmasked_hairshadow_01_", 1},
+    {"S_actor_endminf_hair_01_", "S_npc_major_endminfunmasked_hair_01_", 0},
 };
 #define HEAD_PART_COUNT (sizeof(kHeadParts) / sizeof(kHeadParts[0]))
 

@@ -1,6 +1,6 @@
 # Endministrator Unmasked
 
-An [Endfield Mod Loader](https://github.com/Dr-hydra/Endfield-Mod-Loader) (EML) module for *Arknights: Endfield*. It hides the Endministrator's mask and gives the female Endministrator the unmasked face the game itself uses in story cutscenes.
+An [Endfield Mod Loader](https://github.com/Dr-hydra/Endfield-Mod-Loader) (EML) module for *Arknights: Endfield*. It hides the Endministrator's mask and gives the female Endministrator the unmasked face and hair the game itself uses in story cutscenes.
 
 - Download: [Nexus Mods](https://www.nexusmods.com/arknightendfield/mods/75)
 - 中文说明在[下面](#管理员去面罩)。
@@ -8,7 +8,7 @@ An [Endfield Mod Loader](https://github.com/Dr-hydra/Endfield-Mod-Loader) (EML) 
 ## Features
 
 - Hides the mask of both the female and the male Endministrator, in the field, in menus and in cutscenes.
-- Swaps in the face the story uses when she takes the mask off, for the female Endministrator only: face, brows, eyeliner and lashes, irises, eye-white shading and the bangs shadow. Body, outfit and hair are untouched.
+- Swaps in the face and hair the story uses when she takes the mask off, for the female Endministrator only: face, brows, eyeliner and lashes, irises, eye-white shading, hair and the bangs shadow. Body and outfit are untouched. The story bangs follow the head; the side and back hair keep the playable model's hair physics.
 
 Both options are on the module's page in EML and switch live in game. Turning the face swap on also turns mask hiding on; turning mask hiding off also turns the face swap off.
 
@@ -17,7 +17,7 @@ Tested in game on the CN client 1.6.3 through the third-party module loader of B
 ## How it works
 
 - **Mask hiding** hooks the engine implementations of `Transform.SetParent` and `GameObject.SetActive`. When an Endministrator model is attached to its parent, the mask parts (`S_actor_endmin{f,m}_cloth_03/05`, every LOD) are switched off, and later `SetActive(true)` calls on them become `SetActive(false)`. Setting changes are applied on the main thread from a frame pump on `EventSystem.Update`.
-- **Face swap** loads the game's own unmasked prefab, `chr_0003_endminfunmasked_postmodel`, from the installed game. Its face meshes and materials are reused unchanged and bound to the playable skeleton through helper bones (local transform = playable bindpose × story bindpose⁻¹), so expressions and blinking still come from the playable model's facial animation.
+- **Face swap** loads the game's own unmasked prefab, `chr_0003_endminfunmasked_postmodel`, from the installed game. Its face and hair meshes and materials are reused unchanged and bound to the playable skeleton through helper bones (local transform = playable bindpose × story bindpose⁻¹), so expressions and blinking still come from the playable model's facial animation. The story hair shares its bones with the playable hair except for three bangs chains; those are attached to the head bone the same way and have no physics of their own.
 - **Restoring**: switching an option or the module off puts back only what this module changed.
 - **Crash guard**: before a face swap the module writes a marker file and removes it a few seconds after the new face has been drawn. If the game crashes in that window, the next launch only hides the mask. Turning the face swap off and on again retries it. The marker is in `%LOCALAPPDATA%\zhuran24.endmin-unmasked\`.
 
@@ -55,14 +55,14 @@ Written with AI assistance (Claude Code and Codex). The in-game results were che
 
 # 管理员去面罩
 
-《明日方舟：终末地》的 [Endfield Mod Loader](https://github.com/Dr-hydra/Endfield-Mod-Loader)（EML）模块：隐藏管理员的面罩，女管理员另换上游戏自带的无面罩的脸，也就是剧情里摘下面罩时用的模型。
+《明日方舟：终末地》的 [Endfield Mod Loader](https://github.com/Dr-hydra/Endfield-Mod-Loader)（EML）模块：隐藏管理员的面罩，女管理员另换上游戏自带的无面罩的脸和头发，也就是剧情里摘下面罩时用的模型。
 
 下载：[N 网](https://www.nexusmods.com/arknightendfield/mods/75)
 
 ## 功能
 
 - 隐藏管理员的面罩，男女管理员都适用，大世界、角色界面和剧情里都生效。
-- 换上剧情里摘下面罩时用的脸，只做了女管理员：脸、眉毛、眼线睫毛、眼珠、眼白阴影和刘海投影。身体、衣服和头发不动。
+- 换上剧情里摘下面罩时用的脸和头发，只做了女管理员：脸、眉毛、眼线睫毛、眼珠、眼白阴影、头发和刘海投影。身体和衣服不动。剧情版的刘海跟着头动，侧面和后面的头发照旧由可玩模型的头发物理带动。
 
 两个开关都在 EML 的模块页面里，改了在游戏里马上生效。打开换脸会一并打开隐藏面罩，关掉隐藏面罩会一并关掉换脸。
 
@@ -71,7 +71,7 @@ Written with AI assistance (Claude Code and Codex). The in-game results were che
 ## 原理
 
 - **隐藏面罩**：挂 `Transform.SetParent` 和 `GameObject.SetActive` 的引擎实现。管理员模型挂到父节点上时，把面罩部件（`S_actor_endmin{f,m}_cloth_03/05`，各级 LOD）关掉；之后对它们的 `SetActive(true)` 一律改成 `SetActive(false)`。开关变化在主线程处理，挂在 `EventSystem.Update` 的帧泵上。
-- **换脸**：从装好的游戏里加载自带的无面罩预制体 `chr_0003_endminfunmasked_postmodel`，脸部网格和材质原样复用，用辅助骨（局部变换 = 可玩 bindpose × 剧情版 bindpose⁻¹）接到可玩骨架上，所以表情和眨眼仍由可玩模型的脸部动画带动。
+- **换脸**：从装好的游戏里加载自带的无面罩预制体 `chr_0003_endminfunmasked_postmodel`，脸部和头发的网格、材质原样复用，用辅助骨（局部变换 = 可玩 bindpose × 剧情版 bindpose⁻¹）接到可玩骨架上，所以表情和眨眼仍由可玩模型的脸部动画带动。剧情版头发除了三串刘海骨都和可玩模型的头发共用骨骼；刘海骨同样挂在头骨下，没有自己的物理。
 - **还原**：关掉开关或停用模块时，只把本模块改过的东西换回去。
 - **崩溃保险**：换脸前写一个标记文件，新脸画出来几秒后删掉。游戏在这几秒里崩了的话，下次启动只隐藏面罩；把换脸关掉再打开就会重试。标记文件在 `%LOCALAPPDATA%\zhuran24.endmin-unmasked\`。
 

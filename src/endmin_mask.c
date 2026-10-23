@@ -14,7 +14,7 @@
  * 与 EFTool 不同的一处：恢复时只把"被本模块压下去、而游戏原本要显示"的对象重新打开，
  * 不把四个部件一律设成显示（03/05 可能是同一件衣服的不同变体，由游戏决定显示哪个）。
  * 1.4.0 起女管理员去面罩时另换上官方无面罩的头（official_head.inl），面罩那两格改放眼线和
- * 刘海投影，不再隐藏；男管理员仍只隐藏面罩。
+ * 刘海投影，不再隐藏；1.5.0 起头发也换成官方那套。男管理员仍只隐藏面罩。
  *
  * 线程：initialize / configuration_changed 在 Host 工作线程；Unity 调用一律放在
  * 主线程（EventSystem.Update 帧泵、SetActive 拦截）里做。会抛托管异常的调用都走
@@ -39,7 +39,7 @@
 #else
 #define MODULE_ID "local.endmin_mask"
 #endif
-#define MODULE_VERSION "1.4.1"
+#define MODULE_VERSION "1.5.0"
 
 static const char* const kMaskNames[] = {
     "S_actor_endminf_cloth_03",
