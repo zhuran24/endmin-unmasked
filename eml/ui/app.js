@@ -21,7 +21,7 @@ function render() {
   $('#official_face').checked = configuration.official_face !== false;
 }
 
-// 换脸离不开隐藏面罩：打开换脸时一并打开隐藏，关掉隐藏时一并关掉换脸。
+// 换头离不开隐藏面罩：打开换头时一并打开隐藏，关掉隐藏时一并关掉换头。
 function linked(value, changed) {
   if (changed === 'official_face' && value.official_face) {
     return { ...value, hide_mask: true };
@@ -72,7 +72,7 @@ host?.onmessage((message) => {
   const body = message.body;
   $('#phase').textContent = (phases[body.phase] || body.phase) + ' (' + body.version + ')';
   $('#parts').textContent = body.phase !== 'ready' ? '—'
-    : body.official_face_available === false ? '换脸不可用，只隐藏面罩 · face swap unavailable, mask hiding only'
+    : body.official_face_available === false ? '换头不可用，只隐藏面罩 · head swap unavailable, mask hiding only'
     : String(body.parts_swapped);
 });
 
