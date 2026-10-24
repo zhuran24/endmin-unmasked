@@ -9,19 +9,21 @@ An [Endfield Mod Loader](https://github.com/Dr-hydra/Endfield-Mod-Loader) (EML) 
 
 - Hides the mask of both the female and the male Endministrator, in the field, in menus and in cutscenes.
 - Swaps in the head the story uses when she takes the mask off, for the female Endministrator only: face, brows, eyeliner and lashes, irises, eye-white shading, hair and the bangs shadow. Body and outfit are untouched. The story bangs follow the head; the side and back hair keep the playable model's hair physics.
+- Fixes her eyes in the squad screen. In the second squad position her idle animation turns three face-shape bones, and the skin around her eyes then covers them. The mask normally hides this; with the mask off it happens with either head. While the mask is hidden, the module puts those bones back in the squad screen.
 
 Both options are on the module's page in EML and switch live in game. Turning the head swap on also turns mask hiding on; turning mask hiding off also turns the head swap off.
 
-Tested in game on the CN client 1.6.3 through the third-party module loader of Better Endfield 3.5.4, which EML's loader is derived from. It has not been run inside EML itself yet.
+Tested in game on the CN client 1.6.4, built from the same source as a Better Endfield 3.5.4 module. EML's loader is derived from Better Endfield's and takes the same module packages; this module has not been run inside EML itself yet.
 
 ## How it works
 
 - **Mask hiding** hooks the engine implementations of `Transform.SetParent` and `GameObject.SetActive`. When an Endministrator model is attached to its parent, the mask parts (`S_actor_endmin{f,m}_cloth_03/05`, every LOD) are switched off, and later `SetActive(true)` calls on them become `SetActive(false)`. Setting changes are applied on the main thread from a frame pump on `EventSystem.Update`.
 - **Head swap** loads the game's own unmasked prefab, `chr_0003_endminfunmasked_postmodel`, from the installed game. Its face and hair meshes and materials are reused unchanged and bound to the playable skeleton through helper bones (local transform = playable bindpose × story bindpose⁻¹), so expressions and blinking still come from the playable model's facial animation. The story hair shares its bones with the playable hair except for three bangs chains; those are attached to the head bone the same way and have no physics of their own.
+- **Squad screen eyes**: the squad screen plays `A_actor_endminf_uiteam_idle_01..04` on her menu model, one per squad position. `uiteam_idle_02` turns `head_dn_jnt`, `head_mid_jnt` and `head_up_jnt` by about 90° and the upper-eyelid controls `eye{Lf,Rt}upeyeControl_jnt` by 178° and 23°; the other clips keep these bones at rest. For a menu model in a squad slot, the module writes these five bones back to the pose recorded when the model was spawned, every frame after `Beyond.TailGameLoop.LateUpdate`, which runs after the animator. Her expression otherwise still comes from the animation.
 - **Restoring**: switching an option or the module off puts back only what this module changed.
 - **Crash guard**: before a head swap the module writes a marker file and removes it a few seconds after the new head has been drawn. If the game crashes in that window, the next launch only hides the mask. Turning the head swap off and on again retries it. The marker is in `%LOCALAPPDATA%\zhuran24.endmin-unmasked\`.
 
-The source is `src/endmin_mask.c` (mask hiding, module entry points) and `src/official_head.inl` (head swap).
+The source is `src/endmin_mask.c` (mask hiding, module entry points), `src/official_head.inl` (head swap) and `src/squad_eyes.inl` (squad screen eyes).
 
 ## Building
 
@@ -63,19 +65,21 @@ Written with AI assistance (Claude Code and Codex). The in-game results were che
 
 - 隐藏管理员的面罩，男女管理员都适用，大世界、角色界面和剧情里都生效。
 - 换上剧情里老管的头（只做了女管）：脸、眉毛、眼线睫毛、眼珠、眼白阴影、头发和刘海投影都换成剧情版的，身体和衣服不动。剧情版的刘海跟着头动，侧面和后面的头发照旧由可玩模型的头发物理带动。
+- 修好编队界面里女管理员的眼睛：她站编队第 2 位时，待机动画会转动三根脸型骨，眼睛周围的皮肤跟着把眼睛盖住。平时有面罩挡着看不出来，摘了面罩换不换头都会这样。隐藏面罩时，模块在编队界面里把这几根骨摆回原位。
 
 两个开关都在 EML 的模块页面里，改了在游戏里马上生效。打开换头会一并打开隐藏面罩，关掉隐藏面罩会一并关掉换头。
 
-在国服 1.6.3 实测过，用的是 Better Endfield 3.5.4 的第三方模块加载器，EML 的加载器就是从它拆出来的。还没在 EML 里实际跑过。
+在国服 1.6.4 实测过，测的是同一份源码编成的 Better Endfield 3.5.4 模块。EML 的加载器就是从 Better Endfield 拆出来的，认同样的模块包；还没在 EML 里实际跑过。
 
 ## 原理
 
 - **隐藏面罩**：挂 `Transform.SetParent` 和 `GameObject.SetActive` 的引擎实现。管理员模型挂到父节点上时，把面罩部件（`S_actor_endmin{f,m}_cloth_03/05`，各级 LOD）关掉；之后对它们的 `SetActive(true)` 一律改成 `SetActive(false)`。开关变化在主线程处理，挂在 `EventSystem.Update` 的帧泵上。
 - **换头**：从装好的游戏里加载自带的无面罩预制体 `chr_0003_endminfunmasked_postmodel`，脸部和头发的网格、材质原样复用，用辅助骨（局部变换 = 可玩 bindpose × 剧情版 bindpose⁻¹）接到可玩骨架上，所以表情和眨眼仍由可玩模型的脸部动画带动。剧情版头发除了三串刘海骨都和可玩模型的头发共用骨骼；刘海骨同样挂在头骨下，没有自己的物理。
+- **编队界面的眼睛**：编队界面按站位给她的界面模型放 `A_actor_endminf_uiteam_idle_01..04`。`uiteam_idle_02` 把 `head_dn_jnt`、`head_mid_jnt`、`head_up_jnt` 转了约 90°，上眼皮控制骨 `eye{Lf,Rt}upeyeControl_jnt` 转了 178° 和 23°；另外几段动画里这五根都在静止位置。对站在编队里的界面模型，模块每帧在 `Beyond.TailGameLoop.LateUpdate` 之后（动画已经写完骨），把这五根写回模型刚生成时记下的姿势；其余表情照旧跟动画走。
 - **还原**：关掉开关或停用模块时，只把本模块改过的东西换回去。
 - **崩溃保险**：换头前写一个标记文件，新头画出来几秒后删掉。游戏在这几秒里崩了的话，下次启动只隐藏面罩；把换头关掉再打开就会重试。标记文件在 `%LOCALAPPDATA%\zhuran24.endmin-unmasked\`。
 
-源码是 `src/endmin_mask.c`（隐藏面罩、模块入口）和 `src/official_head.inl`（换头）。
+源码是 `src/endmin_mask.c`（隐藏面罩、模块入口）、`src/official_head.inl`（换头）和 `src/squad_eyes.inl`（编队界面的眼睛）。
 
 ## 构建
 

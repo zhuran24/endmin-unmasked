@@ -15,6 +15,7 @@
  * 不把四个部件一律设成显示（03/05 可能是同一件衣服的不同变体，由游戏决定显示哪个）。
  * 1.4.0 起女管理员去面罩时另换上官方无面罩的头（official_head.inl），面罩那两格改放眼线和
  * 刘海投影，不再隐藏；1.5.0 起头发也换成官方那套。男管理员仍只隐藏面罩。
+ * 1.5.4 起编队界面里把女管理员被待机动画转歪的脸型骨和上眼皮控制骨写回静止姿势（squad_eyes.inl）。
  *
  * 线程：initialize / configuration_changed 在 Host 工作线程；Unity 调用一律放在
  * 主线程（EventSystem.Update 帧泵、SetActive 拦截）里做。会抛托管异常的调用都走
@@ -39,7 +40,7 @@
 #else
 #define MODULE_ID "local.endmin_mask"
 #endif
-#define MODULE_VERSION "1.5.0"
+#define MODULE_VERSION "1.5.4"
 
 static const char* const kMaskNames[] = {
     "S_actor_endminf_cloth_03",
@@ -277,6 +278,7 @@ static int ResolveMethod(const char* assembly, const char* namespace_name, const
     uint32_t parameter_count, BE_ResolvedMethodV1* out);
 
 #include "official_head.inl"
+#include "squad_eyes.inl"
 
 /* 兜底的定时检查：新角色的面罩在预制体里本来就是激活的，游戏不会对它调 SetActive(true)。
    主力是下面的 SetParent 触发（模型挂上父节点那一刻就扫）；这里每 5 秒对每个根取一次
@@ -559,6 +561,9 @@ static void DetourSetParent(void* self, void* parent, uint8_t stays, const void*
     g_in_pump = 1;
     top = TopGameObject(Invoke(g_mi_get_game_object, self, NULL));
     hidden = top ? HideUnder(NULL, top, 1) : 0;
+    if (reason == 1 && StartsWith(name, "chr_0003_endminf") && strstr(name, "uimodel")) {
+        SquadTrack(self, name);
+    }
     g_in_pump = 0;
     count = InterlockedIncrement(&g_parent_triggers);
     if (count <= 24) {
@@ -576,6 +581,7 @@ static void RestoreForShutdown(void) {
     UnswapAllHeads();
     ClearRepurposed();
     RestoreAll();
+    SquadForget();
     g_hide_applied = 0;
     if (g_guard_clear_at) {
         GuardClear();
@@ -602,6 +608,12 @@ static void Pump(void) {
         DumpScene();
         g_in_pump = 0;
     }
+    if (g_squad_dump_requested) {
+        InterlockedExchange(&g_squad_dump_requested, 0);
+        g_in_pump = 1;
+        SquadDump();
+        g_in_pump = 0;
+    }
     want = g_hide_requested;
     face = g_official_face_requested; /* 这一帧（含换头队列）都按这个值做；中途变了下一帧再补 */
     if (want != g_hide_applied || g_rescan_requested) {
@@ -614,6 +626,9 @@ static void Pump(void) {
                 HideRepurposed();
             }
             ScanRoots(1);
+            if (face) {
+                SquadRequeueHeads();
+            }
             ProcessHeadQueue(face);
         } else {
             /* 先把头换回原样（面罩那两格就又是面罩了），再放出被压下去的面罩。 */
@@ -636,6 +651,7 @@ static void Pump(void) {
         g_official_face_applied = face;
         if (face) {
             ScanRoots(1);
+            SquadRequeueHeads();
         } else {
             DropHeadQueue();
             UnswapAllHeads();
@@ -826,6 +842,17 @@ static BE_Result Setup(const BE_HostApiV1* host) {
         Log("il2cpp_gchandle_get_target missing; restore-on-disable will be skipped");
     }
     ResolveHeadContract(game_assembly);
+    ResolveSquadContract();
+    if (g_squad_api.ok &&
+        ResolveMethod("Entry.Beyond.dll", "Beyond", "TailGameLoop", "LateUpdate", NULL, "System.Void", 0,
+            &method) &&
+        method.method_pointer &&
+        Hook(host, method.method_pointer, (void*)DetourTailLateUpdate, (void**)&g_original_tail_late)) {
+        Log("squad eyes: ready");
+    } else {
+        g_squad_api.ok = 0;
+        Log("squad eyes: unavailable, the squad screen keeps the animation's eye pose");
+    }
 
     /* 优先挂 icall（Unity 引擎实现，所有托管调用都要经过，包括被内联的包装方法）；
        解析不到再退回 IL2CPP 包装方法入口。两者参数都是 (self, bool[, MethodInfo*])。 */
@@ -940,6 +967,12 @@ static BE_Result BE_CALL ConfigurationChanged(const char* configuration) {
     long rescan = ReadLong(text, "rescan", 0);
     static long last_dump;
     long dump = ReadLong(text, "dump", 0);
+    /* squad_eyes：编队界面里把被待机动画转歪的骨写回静止姿势，0 不写回、1 写回（默认）；
+       facedump=<数字>：数字变了就列一次这些骨的现值（排查用）。见 squad_eyes.inl 文件头。 */
+    LONG squad_eyes = (LONG)ReadLong(text, "squad_eyes", 1);
+    LONG previous_squad_eyes = InterlockedExchange(&g_squad_eyes, squad_eyes);
+    static long last_facedump;
+    long facedump = ReadLong(text, "facedump", 0);
     if (previous != hide) {
         Log("hide_mask=%s", hide ? "true" : "false");
     }
@@ -957,6 +990,13 @@ static BE_Result BE_CALL ConfigurationChanged(const char* configuration) {
     if (dump != last_dump) {
         last_dump = dump;
         InterlockedExchange(&g_dump_requested, 1);
+    }
+    if (previous_squad_eyes != squad_eyes) {
+        Log("squad_eyes=%ld", (long)squad_eyes);
+    }
+    if (facedump != last_facedump) {
+        last_facedump = facedump;
+        InterlockedExchange(&g_squad_dump_requested, 1);
     }
     return BE_Result_Ok;
 }
